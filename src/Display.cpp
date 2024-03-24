@@ -20,14 +20,11 @@ void Display::updateDisplay(GameState &gameState) {
     Log.verboseln("round phase update required");
     Log.verboseln("stored round phase: %s", gameState.getPhase().c_str());
     if (gameState.getPhase() == "live") {
-      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2,
-                             matrix->Color(0, 255, 0));
+      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2, GREEN);
     } else if (gameState.getPhase() == "freezetime") {
-      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2,
-                             matrix->Color(175, 0, 175));
+      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2, PURPLE);
     } else if (gameState.getPhase() == "over") {
-      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2,
-                             matrix->Color(255, 0, 0));
+      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2, RED);
     }
   }
 
@@ -35,12 +32,10 @@ void Display::updateDisplay(GameState &gameState) {
     Log.verboseln("round win update required");
     Log.verboseln("stored round win: %s", gameState.getWinTeam().c_str());
     if (gameState.getWinTeam().compare("CT") == 0) {
-      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2,
-                             matrix->Color(0, 0, 255));
+      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2, BLUE);
     }
     if (gameState.getWinTeam().compare("T") == 0) {
-      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2,
-                             matrix->Color(255, 165, 0));
+      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2, ORANGE);
     }
   }
 
@@ -51,10 +46,14 @@ void Display::updateDisplay(GameState &gameState) {
     int barWidth = gameState.getHealth() * MATRIX_WIDTH / 100;
     Log.infoln("drawing health %d with width %d", gameState.getHealth(),
                barWidth);
-    this->matrix->drawFastHLine(0, 0, barWidth, matrix->Color(255, 255, 255));
+    int greenVal = gameState.getHealth() * 255 / 100;
+    int redVal = 255 - greenVal;
+
+    this->matrix->drawFastHLine(0, 0, barWidth,
+                                matrix->Color(redVal, greenVal, 0));
+
     if (barWidth != MATRIX_WIDTH) {
-      this->matrix->drawFastHLine(barWidth, 0, MATRIX_WIDTH - barWidth,
-                                  matrix->Color(0, 0, 0));
+      this->matrix->drawFastHLine(barWidth, 0, MATRIX_WIDTH - barWidth, BLACK);
     }
   }
 
@@ -68,12 +67,15 @@ void Display::updateDisplay(GameState &gameState) {
 
     int barWidth = ammoPercentage * MATRIX_WIDTH / 100;
 
+    int greenVal = ammoPercentage * 255 / 100;
+    int redVal = 255 - greenVal;
+
     Log.infoln("drawing %d percent ammo with width %d", ammoPercentage,
                barWidth);
-    this->matrix->drawFastHLine(0, 1, barWidth, matrix->Color(255, 255, 255));
+    this->matrix->drawFastHLine(0, 1, barWidth,
+                                matrix->Color(redVal, greenVal, 0));
     if (barWidth != MATRIX_WIDTH) {
-      this->matrix->drawFastHLine(barWidth, 1, MATRIX_WIDTH - barWidth,
-                                  matrix->Color(0, 0, 0));
+      this->matrix->drawFastHLine(barWidth, 1, MATRIX_WIDTH - barWidth, BLACK);
     }
   }
 
