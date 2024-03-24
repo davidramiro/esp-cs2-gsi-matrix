@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "esp-cs2-gsi-matrix",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

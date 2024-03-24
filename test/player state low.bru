@@ -1,0 +1,22 @@
+meta {
+  name: player state low
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://10.0.3.25
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "player": {
+      "state": {
+        "health": 15,
+        "armor": 5
+      }
+    }
+  }
+}

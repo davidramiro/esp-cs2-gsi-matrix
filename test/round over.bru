@@ -1,0 +1,19 @@
+meta {
+  name: round over
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://10.0.3.25
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "round": {
+      "phase": "over"
+    }
+  }
+}
