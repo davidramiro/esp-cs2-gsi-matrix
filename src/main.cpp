@@ -22,24 +22,25 @@ void handlePostGSI(Request &req, Response &res) {
   char const *bomb = obj["round"]["bomb"];
   char const *win_team = obj["round"]["win_team"];
   int health = obj["player"]["state"]["health"];
+  const JsonObject weapons = obj["player"]["weapons"];
 
-  char const *weapon1State = obj["player"]["weapons"]["weapon_1"]["state"];
-  char const *weapon2State = obj["player"]["weapons"]["weapon_2"]["state"];
+  if (weapons) {
 
-  if (strcmp(weapon1State, "active") == 0 ||
-      strcmp(weapon2State, "active") == 0) {
-    const char *selector =
-        strcmp(weapon1State, "active") == 0 ? "weapon_1" : "weapon_2";
-    int ammoClip = obj["player"]["weapons"][selector]["ammo_clip"];
-    int ammoMax = obj["player"]["weapons"][selector]["ammo_clip_max"];
+    int ammoClip = -1;
+    int ammoMax = -1;
 
-    Log.verboseln("received ammo clip %d and max %d", ammoClip, ammoMax);
+    for (JsonPair kv : weapons) {
+      if (kv.value()["state"] == "active") {
+        ammoClip = kv.value()["ammo_clip"];
+        ammoMax = kv.value()["ammo_clip_max"];
+      }
+    }
 
-    if (ammoClip != gameState.getAmmoClip()) {
+    if (ammoClip != -1 && ammoClip != gameState.getAmmoClip()) {
       gameState.updatePlayerAmmoClip(ammoClip);
     }
 
-    if (ammoMax != 0 && ammoMax != gameState.getAmmoMax()) {
+    if (ammoMax > 0 && ammoMax != gameState.getAmmoMax()) {
       gameState.updatePlayerAmmoMax(ammoMax);
     }
   }
