@@ -22,7 +22,27 @@ void handlePostGSI(Request &req, Response &res) {
   char const *bomb = obj["round"]["bomb"];
   char const *win_team = obj["round"]["win_team"];
   int health = obj["player"]["state"]["health"];
-  int armor = obj["player"]["state"]["armor"];
+
+  char const *weapon1State = obj["player"]["weapons"]["weapon_1"]["state"];
+  char const *weapon2State = obj["player"]["weapons"]["weapon_2"]["state"];
+
+  if (strcmp(weapon1State, "active") == 0 ||
+      strcmp(weapon2State, "active") == 0) {
+    const char *selector =
+        strcmp(weapon1State, "active") == 0 ? "weapon_1" : "weapon_2";
+    int ammoClip = obj["player"]["weapons"][selector]["ammo_clip"];
+    int ammoMax = obj["player"]["weapons"][selector]["ammo_clip_max"];
+
+    Log.verboseln("received ammo clip %d and max %d", ammoClip, ammoMax);
+
+    if (ammoClip != gameState.getAmmoClip()) {
+      gameState.updatePlayerAmmoClip(ammoClip);
+    }
+
+    if (ammoMax != 0 && ammoMax != gameState.getAmmoMax()) {
+      gameState.updatePlayerAmmoMax(ammoMax);
+    }
+  }
 
   if (phase && gameState.getPhase().compare(phase) != 0) {
     Log.verboseln("phase in game state: %s, phase from request: %s",
@@ -45,12 +65,6 @@ void handlePostGSI(Request &req, Response &res) {
     Log.verboseln("health in game state: %d, health from request: %d",
                   gameState.getHealth(), health);
     gameState.updatePlayerHealth(health);
-  }
-
-  if (armor != 0 && armor != gameState.getArmor()) {
-    Log.verboseln("armor in game state: %d, armor from request: %d",
-                  gameState.getArmor(), health);
-    gameState.updatePlayerArmor(armor);
   }
 
   display.updateDisplay(gameState);
@@ -77,7 +91,7 @@ void setup() {
   }
 
   Log.infoln("IP: %p", WiFi.localIP());
-  display.showText(WiFi.localIP().toString().c_str(), 1500);
+  // display.showText(WiFi.localIP().toString().c_str(), 1500);
 
   app.post("/", &handlePostGSI);
   server.begin();

@@ -58,11 +58,17 @@ void Display::updateDisplay(GameState &gameState) {
     }
   }
 
-  if (gameState.playerArmorIsUpdated() && gameState.getArmor() != 0) {
-    Log.verboseln("player armor update required");
-    Log.verboseln("stored armor: %d", gameState.getArmor());
-    int barWidth = gameState.getArmor() * MATRIX_WIDTH / 100;
-    Log.infoln("drawing armor %d with width %d", gameState.getArmor(),
+  if (gameState.playerAmmoIsUpdated() && gameState.getAmmoMax() != 0) {
+    Log.verboseln("player ammo update required");
+    Log.verboseln("stored ammo clip: %d, max %d", gameState.getAmmoClip(),
+                  gameState.getAmmoMax());
+
+    int ammoPercentage =
+        (gameState.getAmmoClip() * 100) / gameState.getAmmoMax();
+
+    int barWidth = ammoPercentage * MATRIX_WIDTH / 100;
+
+    Log.infoln("drawing %d percent ammo with width %d", ammoPercentage,
                barWidth);
     this->matrix->drawFastHLine(0, 1, barWidth, matrix->Color(255, 255, 255));
     if (barWidth != MATRIX_WIDTH) {

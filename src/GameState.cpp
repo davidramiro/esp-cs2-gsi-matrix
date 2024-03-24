@@ -22,9 +22,14 @@ void GameState::updatePlayerHealth(int health) {
   this->healthUpdated = true;
 }
 
-void GameState::updatePlayerArmor(int armor) {
-  this->armor = armor;
-  this->armorUpdated = true;
+void GameState::updatePlayerAmmoMax(int ammoMax) {
+  this->ammoMax = ammoMax;
+  this->ammoUpdated = true;
+}
+
+void GameState::updatePlayerAmmoClip(int ammoClip) {
+  this->ammoClip = ammoClip;
+  this->ammoUpdated = true;
 }
 
 void GameState::setUpdateFinished() {
@@ -36,17 +41,14 @@ void GameState::setUpdateFinished() {
 }
 
 std::string GameState::getPhase() const { return phase; }
-
 std::string GameState::getBombStatus() const { return bombStatus; }
-
 std::string GameState::getWinTeam() const { return winTeam; }
-
 int GameState::getHealth() const { return health; }
-
-int GameState::getArmor() const { return armor; }
+int GameState::getAmmoClip() const { return ammoClip; }
+int GameState::getAmmoMax() const { return ammoMax; }
 
 bool GameState::roundPhaseIsUpdated() const { return phaseUpdated; };
 bool GameState::roundWinTeamIsUpdated() const { return winTeamUpdated; }
 bool GameState::bombStatusIsUpdated() const { return bombUpdated; }
 bool GameState::playerHealthIsUpdated() const { return healthUpdated; }
-bool GameState::playerArmorIsUpdated() const { return armorUpdated; }
+bool GameState::playerAmmoIsUpdated() const { return ammoUpdated; }

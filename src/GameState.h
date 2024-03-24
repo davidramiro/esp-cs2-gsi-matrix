@@ -11,7 +11,8 @@ public:
   void updateRoundWinTeam(const char *winTeam);
   void updateBombStatus(const char *bombStatus);
   void updatePlayerHealth(int health);
-  void updatePlayerArmor(int armor);
+  void updatePlayerAmmoMax(int ammoMax);
+  void updatePlayerAmmoClip(int ammoClip);
   void setUpdateFinished();
 
   std::string getPhase() const;
@@ -19,12 +20,14 @@ public:
   std::string getWinTeam() const;
   int getHealth() const;
   int getArmor() const;
+  int getAmmoClip() const;
+  int getAmmoMax() const;
 
   bool roundPhaseIsUpdated() const;
   bool roundWinTeamIsUpdated() const;
   bool bombStatusIsUpdated() const;
   bool playerHealthIsUpdated() const;
-  bool playerArmorIsUpdated() const;
+  bool playerAmmoIsUpdated() const;
 
 private:
   bool phaseUpdated;
@@ -41,4 +44,8 @@ private:
 
   bool armorUpdated;
   int armor;
+
+  bool ammoUpdated;
+  int ammoClip;
+  int ammoMax;
 };
