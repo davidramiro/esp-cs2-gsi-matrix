@@ -1,9 +1,9 @@
 #pragma once
 
 #include "GameState.h"
-#include <Adafruit_GFX.h>
-#include <Adafruit_NeoMatrix.h>
-#include <Adafruit_NeoPixel.h>
+#include <LovyanGFX.hpp>
+#include "LGFX_Config.hpp"
+#include <SPI.h>
 #include <ArduinoLog.h>
 
 const uint16_t BLACK = 0x0;
@@ -16,12 +16,15 @@ const uint16_t PURPLE = 0xF81F;
 
 class Display {
 public:
-  Display(int pin, int width, int height, int brightness);
+  Display();
 
   void updateDisplay(GameState &gameState);
 
-  void showText(const char *text, int pause);
+  void displayConnectionInfo(const char *ssid, const char *ip);
+  void drawMediumText(const char *text);
+  void drawLargeTextTop(const char *text, const int bgcolor);
+  void colorFill(int color);
 
 private:
-  Adafruit_NeoMatrix *matrix;
+  LGFX screen;
 };

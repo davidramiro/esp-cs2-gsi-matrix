@@ -4,24 +4,27 @@
 #include <ArduinoJson.h>
 #include <ArduinoLog.h>
 #include <aWOT.h>
-
-#if __has_include("WifiCredentials.h")
-#include "WifiCredentials.h"
-#else
-#define WIFI_SSID "YOUR_SSID"
-#define WIFI_PASSWORD "YOUR_PASSWORD"
-#endif
+#include "Index.h"
 
 #if defined(ESP8266)
-#include <ESP8266WiFi.h>
-#elif defined(ESP32)
-#include <WiFi.h>
+#include <ESP8266WiFi.h>          
+#else
+#include <WiFi.h>          
 #endif
 
-#define PIN D2
-#define BRIGHTNESS 96
-#define MATRIX_WIDTH 8
-#define MATRIX_HEIGHT 8
+#include <DNSServer.h>
+#if defined(ESP8266)
+#include <ESP8266WebServer.h>
+#else
+#include <WebServer.h>
+#endif
+#include <WiFiManager.h>   
+
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 135
 
 void handlePostGSI(Request &req, Response &res);
 

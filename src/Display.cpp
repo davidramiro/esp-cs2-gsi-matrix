@@ -1,15 +1,17 @@
 #include "Display.h"
 #include "main.h"
 
-Display::Display(int pin, int width, int height, int brightness) {
-  matrix = new Adafruit_NeoMatrix(width, height, pin,
-                                  NEO_MATRIX_TOP + NEO_MATRIX_RIGHT +
-                                      NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
-                                  NEO_GRB + NEO_KHZ800);
-  matrix->begin();
-  matrix->clear();
-  matrix->setBrightness(brightness);
-  matrix->show();
+Display::Display() {
+
+  screen.init();
+  screen.setRotation(1);
+  screen.setColorDepth(24);
+
+  screen.fillScreen(TFT_BLACK);
+  screen.fillScreen();
+  screen.setBrightness(18);
+
+  screen.setFont(&fonts::DejaVu18);
 }
 
 void Display::updateDisplay(GameState &gameState) {
@@ -20,22 +22,24 @@ void Display::updateDisplay(GameState &gameState) {
     Log.verboseln("round phase update required");
     Log.verboseln("stored round phase: %s", gameState.getPhase().c_str());
     if (gameState.getPhase() == "live") {
-      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2, GREEN);
-    } else if (gameState.getPhase() == "freezetime") {
-      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2, PURPLE);
+      this->screen.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_BLACK);
+    // } else if (gameState.getPhase() == "freezetime") {
+    //   // this->screen.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, PURPLE);
     } else if (gameState.getPhase() == "over") {
-      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2, RED);
+      this->screen.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_BLACK);
     }
   }
 
   if (gameState.roundWinTeamIsUpdated()) {
     Log.verboseln("round win update required");
     Log.verboseln("stored round win: %s", gameState.getWinTeam().c_str());
-    if (gameState.getWinTeam().compare("CT") == 0) {
-      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2, BLUE);
+    if (gameState.getWinTeam() == "CT") {
+      this->screen.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_BLUE);
+      this->drawLargeTextTop("CT win", TFT_BLUE);
     }
-    if (gameState.getWinTeam().compare("T") == 0) {
-      this->matrix->fillRect(0, 2, MATRIX_WIDTH, MATRIX_HEIGHT - 2, ORANGE);
+    if (gameState.getWinTeam() == "T") {
+      this->screen.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_ORANGE);
+      this->drawLargeTextTop("T win", TFT_ORANGE);
     }
   }
 
@@ -43,17 +47,17 @@ void Display::updateDisplay(GameState &gameState) {
     Log.verboseln("player health update required");
     Log.verboseln("stored health: %d", gameState.getHealth());
 
-    int barWidth = gameState.getHealth() * MATRIX_WIDTH / 100;
+    int barWidth = gameState.getHealth() * SCREEN_WIDTH / 100;
     Log.infoln("drawing health %d with width %d", gameState.getHealth(),
                barWidth);
     int greenVal = gameState.getHealth() * 255 / 100;
     int redVal = 255 - greenVal;
 
-    this->matrix->drawFastHLine(0, 0, barWidth,
-                                matrix->Color(redVal, greenVal, 0));
+    this->screen.drawFastHLine(0, 10, barWidth,
+      LGFX::color565(redVal, greenVal, 0));
 
-    if (barWidth != MATRIX_WIDTH) {
-      this->matrix->drawFastHLine(barWidth, 0, MATRIX_WIDTH - barWidth, BLACK);
+    if (barWidth != SCREEN_WIDTH) {
+      this->screen.drawFastHLine(barWidth, 10, SCREEN_WIDTH - barWidth, BLACK);
     }
   }
 
@@ -65,33 +69,54 @@ void Display::updateDisplay(GameState &gameState) {
     int ammoPercentage =
         (gameState.getAmmoClip() * 100) / gameState.getAmmoMax();
 
-    int barWidth = ammoPercentage * MATRIX_WIDTH / 100;
+    int barWidth = ammoPercentage * SCREEN_WIDTH / 100;
 
     int greenVal = ammoPercentage * 255 / 100;
     int redVal = 255 - greenVal;
 
     Log.infoln("drawing %d percent ammo with width %d", ammoPercentage,
                barWidth);
-    this->matrix->drawFastHLine(0, 1, barWidth,
-                                matrix->Color(redVal, greenVal, 0));
-    if (barWidth != MATRIX_WIDTH) {
-      this->matrix->drawFastHLine(barWidth, 1, MATRIX_WIDTH - barWidth, BLACK);
+    this->screen.drawFastHLine(10, 20, barWidth,
+                                screen.color565(redVal, greenVal, 0));
+    if (barWidth != SCREEN_WIDTH) {
+      this->screen.drawFastHLine(barWidth, 20, SCREEN_WIDTH - barWidth, BLACK);
     }
   }
 
   gameState.setUpdateFinished();
-  this->matrix->show();
 }
 
-void Display::showText(const char *text, int pause) {
-  for (uint i = 0; i < strlen(text); i++) {
-    this->matrix->clear();
-    this->matrix->setCursor(1, 0);
-    this->matrix->print(text[i]);
-    this->matrix->show();
-    delay(pause);
-  }
+void Display::displayConnectionInfo(const char *ssid, const char *ip) {
+    screen.setFont(&fonts::DejaVu12);
 
-  this->matrix->clear();
-  this->matrix->show();
+    this->screen.drawFastHLine(0, 95, SCREEN_WIDTH, TFT_WHITE);
+    this->screen.setTextSize(1);
+    this->screen.setCursor(0, 100);
+    this->screen.print("Connected to: ");
+    this->screen.println(ssid);
+    this->screen.print("IP: ");
+    this->screen.print(ip);
+}
+
+void Display::drawMediumText(const char *text) {
+  this->screen.clear();
+
+  screen.setFont(&fonts::DejaVu18);
+
+  this->screen.setTextSize(1);
+  this->screen.setCursor(5, 10);
+  this->screen.print(text);
+}
+
+void Display::drawLargeTextTop(const char *text, const int bgcolor) {
+  screen.setFont(&fonts::DejaVu24);
+
+  this->screen.setTextColor(TFT_WHITE, bgcolor);
+  this->screen.setTextSize(2);
+  this->screen.setCursor(120 - 14 * (strlen(text)), 45);
+  this->screen.print(text);
+}
+
+void Display::colorFill(int color) {
+  this->screen.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, color);
 }
