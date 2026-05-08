@@ -20,7 +20,8 @@ enum ScreensEnum {
     SCREEN_ID_ROUND_START = 7,
     SCREEN_ID_BOMB = 8,
     SCREEN_ID_STANDBY = 9,
-    _SCREEN_ID_LAST = 9
+    SCREEN_ID_FREEZETIME_1 = 10,
+    _SCREEN_ID_LAST = 10
 };
 
 typedef struct _objects_t {
@@ -33,6 +34,7 @@ typedef struct _objects_t {
     lv_obj_t *round_start;
     lv_obj_t *bomb;
     lv_obj_t *standby;
+    lv_obj_t *freezetime_1;
     lv_obj_t *obj0;
     lv_obj_t *obj1;
     lv_obj_t *obj2;
@@ -47,6 +49,8 @@ typedef struct _objects_t {
     lv_obj_t *obj11;
     lv_obj_t *obj12;
     lv_obj_t *obj13;
+    lv_obj_t *obj14;
+    lv_obj_t *obj15;
 } objects_t;
 
 extern objects_t objects;
@@ -77,6 +81,9 @@ void tick_screen_bomb();
 
 void create_screen_standby();
 void tick_screen_standby();
+
+void create_screen_freezetime_1();
+void tick_screen_freezetime_1();
 
 void tick_screen_by_id(enum ScreensEnum screenId);
 void tick_screen(int screen_index);

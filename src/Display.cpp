@@ -13,8 +13,6 @@ void Display::updateDisplay(GameState &gameState) {
       loadScreen(SCREEN_ID_ROUND_START);
     } else if (gameState.getPhase() == "freezetime") {
       loadScreen(SCREEN_ID_FREEZETIME);
-    } else if (gameState.getPhase() == "over") {
-      loadScreen(SCREEN_ID_FREEZETIME);
     }
   }
 

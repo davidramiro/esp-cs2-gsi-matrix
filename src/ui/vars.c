@@ -3,7 +3,6 @@
 
 char ip[100] = { 0 };
 char network[100] = { 0 };
-int32_t led_color;
 int32_t bomb_timer;
 char equip[100] = { 0 };
 char money[100] = { 0 };
@@ -33,15 +32,6 @@ int32_t get_var_bomb_timer() {
 void set_var_bomb_timer(int32_t value) {
     bomb_timer = value;
 }
-
-int32_t get_var_led_color() {
-    return led_color;
-}
-
-void set_var_led_color(int32_t value) {
-    led_color = value;
-}
-
 
 const char *get_var_ip() {
     return ip;

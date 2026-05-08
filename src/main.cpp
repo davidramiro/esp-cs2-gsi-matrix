@@ -15,7 +15,7 @@ uint8_t freezeFlipFlop = 0;
 uint8_t standbyTick = 0;
 
 void handlePostGSI(Request &req, Response &res) {
-  // gameState.setHeartbeat();
+  gameState.setHeartbeat();
 
   JsonDocument obj;
   const DeserializationError error = deserializeJson(obj, *req.stream());
@@ -30,11 +30,16 @@ void handlePostGSI(Request &req, Response &res) {
   char const *phase = obj["round"]["phase"];
   char const *bomb = obj["round"]["bomb"];
   char const *win_team = obj["round"]["win_team"];
-  char const *money = obj["player"]["state"]["money"];
-  char const *equip = obj["player"]["state"]["equip_value"];
+  int money = obj["player"]["state"]["money"];
+  int equip = obj["player"]["state"]["equip_value"];
 
-  set_var_equip(equip);
-  set_var_money(money);
+  char moneyStr[50];
+  char equipStr[50];
+  sprintf(equipStr, "%d", equip);
+  sprintf(moneyStr, "%d", money);
+
+  set_var_equip(equipStr);
+  set_var_money(moneyStr);
 
   if (phase && gameState.getPhase() != phase) {
     gameState.updateRoundPhase(phase);
@@ -74,10 +79,10 @@ void lvgl_timer_callback(void *arg) {
 
 void gamestate_tasks(void *arg) {
   if (freezeFlipFlop) {
-    set_var_led_color(0xFF0000);
+    loadScreen(SCREEN_ID_FREEZETIME_1);
     freezeFlipFlop = 0;
   } else {
-    set_var_led_color(0x0000FF);
+    loadScreen(SCREEN_ID_FREEZETIME);
     freezeFlipFlop = 1;
   }
 

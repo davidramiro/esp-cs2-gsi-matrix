@@ -461,6 +461,84 @@ void create_screen_standby() {
 void tick_screen_standby() {
 }
 
+void create_screen_freezetime_1() {
+    lv_obj_t *obj = lv_obj_create(0);
+    objects.freezetime_1 = obj;
+    lv_obj_set_pos(obj, 0, 0);
+    lv_obj_set_size(obj, 320, 170);
+    {
+        lv_obj_t *parent_obj = obj;
+        {
+            lv_obj_t *obj = lv_obj_create(parent_obj);
+            lv_obj_set_pos(obj, 25, 12);
+            lv_obj_set_size(obj, 271, 146);
+            add_style_red(obj);
+        }
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            lv_obj_set_pos(obj, 128, 22);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_font(obj, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_label_set_text_static(obj, "BUY");
+        }
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            lv_obj_set_pos(obj, 47, 69);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_font(obj, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_label_set_text_static(obj, "Money: $");
+        }
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            lv_obj_set_pos(obj, 47, 112);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_text_font(obj, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_label_set_text_static(obj, "Equip:   $");
+        }
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.obj14 = obj;
+            lv_obj_set_pos(obj, 185, 69);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_label_set_long_mode(obj, LV_LABEL_LONG_SCROLL);
+            lv_obj_set_style_text_font(obj, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_label_set_text(obj, "");
+        }
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.obj15 = obj;
+            lv_obj_set_pos(obj, 185, 112);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_label_set_long_mode(obj, LV_LABEL_LONG_SCROLL);
+            lv_obj_set_style_text_font(obj, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_label_set_text(obj, "");
+        }
+    }
+    
+    tick_screen_freezetime_1();
+}
+
+void tick_screen_freezetime_1() {
+    {
+        const char *new_val = get_var_money();
+        const char *cur_val = lv_label_get_text(objects.obj14);
+        if (strcmp(new_val, cur_val) != 0) {
+            tick_value_change_obj = objects.obj14;
+            lv_label_set_text(objects.obj14, new_val);
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        const char *new_val = get_var_equip();
+        const char *cur_val = lv_label_get_text(objects.obj15);
+        if (strcmp(new_val, cur_val) != 0) {
+            tick_value_change_obj = objects.obj15;
+            lv_label_set_text(objects.obj15, new_val);
+            tick_value_change_obj = NULL;
+        }
+    }
+}
+
 typedef void (*tick_screen_func_t)();
 tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_main,
@@ -472,9 +550,10 @@ tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_round_start,
     tick_screen_bomb,
     tick_screen_standby,
+    tick_screen_freezetime_1,
 };
 void tick_screen(int screen_index) {
-    if (screen_index >= 0 && screen_index < 9) {
+    if (screen_index >= 0 && screen_index < 10) {
         tick_screen_funcs[screen_index]();
     }
 }
@@ -580,4 +659,5 @@ void create_screens() {
     create_screen_round_start();
     create_screen_bomb();
     create_screen_standby();
+    create_screen_freezetime_1();
 }
