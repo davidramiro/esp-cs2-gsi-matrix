@@ -23,8 +23,8 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
-#define SCREEN_WIDTH 240
-#define SCREEN_HEIGHT 135
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 170
 
 void handlePostGSI(Request &req, Response &res);
 

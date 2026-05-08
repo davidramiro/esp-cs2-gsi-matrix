@@ -50,8 +50,8 @@ public:
 
       cfg.panel_width      = SCREEN_HEIGHT;   // Physical width
       cfg.panel_height     = SCREEN_WIDTH;   // Physical height
-      cfg.offset_x         = 52;     // X offset
-      cfg.offset_y         = 40;     // Y offset
+      cfg.offset_x         = 36;     // X offset
+      cfg.offset_y         = 0;     // Y offset
       cfg.offset_rotation  = 0;
       cfg.dummy_read_pixel = 8;
       cfg.dummy_read_bits  = 1;

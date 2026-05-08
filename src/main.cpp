@@ -12,10 +12,16 @@ static volatile int freezetime_counter = 0;
 static volatile int clock_delay = 10;
 
 void handlePostGSI(Request &req, Response &res) {
+  int64_t now = esp_timer_get_time();
   Log.verboseln("POST /");
 
   JsonDocument obj;
   DeserializationError error = deserializeJson(obj, *req.stream());
+
+  int64_t elapsed = esp_timer_get_time() - now;
+  now = esp_timer_get_time();
+  Serial.println("elapsed deserialize:");
+  Serial.println(elapsed);
 
   if (error) {
     Log.errorln("error deserializing json body: %s", error.c_str());
@@ -77,10 +83,24 @@ void handlePostGSI(Request &req, Response &res) {
     gameState.updatePlayerHealth(health);
   }
 
+  elapsed = esp_timer_get_time() - now;
+  now = esp_timer_get_time();
+  Serial.println("elapsed parse game state:");
+  Serial.println(elapsed);
+
   dp.updateDisplay(gameState);
+
+  elapsed = esp_timer_get_time() - now;
+  now = esp_timer_get_time();
+  Serial.println("elapsed display:");
+  Serial.println(elapsed);
 
   res.status(200);
   res.print("ok");
+
+  elapsed = esp_timer_get_time() - now;
+  Serial.println("elapsed response:");
+  Serial.println(elapsed);
 }
 
 void handleGet(Request &req, Response &res) {
@@ -129,18 +149,15 @@ void setup() {
 
   WiFiManager wm;
 
-  dp.drawMediumText("Connecting to WiFi...");
+  dp.displayConnectionInfo(false, "", "");
 
   bool res = wm.autoConnect("cs2-screen");
 
   if (!res) {
-    dp.drawMediumText("Connection error.");
     ESP.restart();
-  } else {
-    dp.drawMediumText("Connected :3");
   }
 
-  dp.displayConnectionInfo(WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
+  dp.displayConnectionInfo(true, WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
 
   timeClient.begin();
   timeClient.setTimeOffset(3600);

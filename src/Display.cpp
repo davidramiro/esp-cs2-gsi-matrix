@@ -86,16 +86,29 @@ void Display::updateDisplay(GameState &gameState) {
   gameState.setUpdateFinished();
 }
 
-void Display::displayConnectionInfo(const char *ssid, const char *ip) {
-    screen.setFont(&fonts::DejaVu12);
+void Display::displayConnectionInfo(bool connected, const char *ssid, const char *ip) {
+  this->screen.fillRect(146, 170, 320, 24, TFT_BLACK);
 
-    this->screen.drawFastHLine(0, 95, SCREEN_WIDTH, TFT_WHITE);
-    this->screen.setTextSize(1);
-    this->screen.setCursor(0, 100);
-    this->screen.print("Connected to: ");
-    this->screen.println(ssid);
-    this->screen.print("IP: ");
-    this->screen.print(ip);
+  this->screen.setTextColor(0xFFFF);
+  this->screen.setTextSize(1);
+  this->screen.setFont(&AsciiFont8x16);
+  if (!connected) {
+    this->screen.drawString("Connecting... If WiFi hasn't been configured yet, ", 1, 148);
+    this->screen.drawString("connect to the cs2screen network.", 1, 159);
+  } else {
+
+    this->screen.drawString("Connected to: ", 1, 148);
+    this->screen.drawString(ssid, 109, 148);
+    this->screen.drawString("IP: ", 1, 159);
+    this->screen.drawString(ip, 32, 159);
+
+  }
+
+  this->screen.pushImage(0, -8, 320, 107, cslogo);
+  this->screen.fillRect(-1, 72, 320, 73, 0xFBC0);
+
+  this->screen.setFont(&FreeMonoBold18pt7b);
+  this->screen.drawString("STOP AFK IDIOT", 0, 89);
 }
 
 void Display::drawMediumText(const char *text) {
