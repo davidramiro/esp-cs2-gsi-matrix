@@ -1,30 +1,27 @@
 #include "main.h"
 
+#include "LVGL_Display.h"
+#include "ui/vars.h"
+
 WiFiServer server(80);
 Application app;
 GameState gameState;
 Display dp;
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP);
 
-static volatile int flip = 0;
-static volatile int freezetime_counter = 0;
-static volatile int clock_delay = 10;
+esp_timer_handle_t lvgl_timer;
+esp_timer_handle_t gamestate_timer;
+
+uint8_t freezeFlipFlop = 0;
+uint8_t standbyTick = 0;
 
 void handlePostGSI(Request &req, Response &res) {
-  int64_t now = esp_timer_get_time();
-  Log.verboseln("POST /");
+  // gameState.setHeartbeat();
 
   JsonDocument obj;
-  DeserializationError error = deserializeJson(obj, *req.stream());
-
-  int64_t elapsed = esp_timer_get_time() - now;
-  now = esp_timer_get_time();
-  Serial.println("elapsed deserialize:");
-  Serial.println(elapsed);
+  const DeserializationError error = deserializeJson(obj, *req.stream());
 
   if (error) {
-    Log.errorln("error deserializing json body: %s", error.c_str());
+    Serial.printf("error deserializing json body: %s", error.c_str());
     res.print(error.c_str());
     res.status(500);
     return;
@@ -33,74 +30,28 @@ void handlePostGSI(Request &req, Response &res) {
   char const *phase = obj["round"]["phase"];
   char const *bomb = obj["round"]["bomb"];
   char const *win_team = obj["round"]["win_team"];
-  int health = obj["player"]["state"]["health"];
-  const JsonObject weapons = obj["player"]["weapons"];
+  char const *money = obj["player"]["state"]["money"];
+  char const *equip = obj["player"]["state"]["equip_value"];
 
-  if (weapons) {
-    int ammoClip = -1;
-    int ammoMax = -1;
+  set_var_equip(equip);
+  set_var_money(money);
 
-    for (JsonPair kv: weapons) {
-      if (kv.value()["state"] == "active") {
-        ammoClip = kv.value()["ammo_clip"];
-        ammoMax = kv.value()["ammo_clip_max"];
-      }
-    }
-
-    if (ammoClip != -1 && ammoClip != gameState.getAmmoClip()) {
-      gameState.updatePlayerAmmoClip(ammoClip);
-    }
-
-    if (ammoMax > 0 && ammoMax != gameState.getAmmoMax()) {
-      gameState.updatePlayerAmmoMax(ammoMax);
-    }
-  }
-
-  if (phase && gameState.getPhase().compare(phase) != 0) {
-    Log.verboseln("phase in game state: %s, phase from request: %s",
-                  gameState.getPhase().c_str(), phase);
+  if (phase && gameState.getPhase() != phase) {
     gameState.updateRoundPhase(phase);
-    clock_delay = 10;
-    dp.colorFill(TFT_BLACK);
   }
 
-  if (bomb && gameState.getBombStatus().compare(bomb) != 0) {
-    Log.verboseln("bomb status: %s", bomb);
+  if (bomb && gameState.getBombStatus() != bomb) {
     gameState.updateBombStatus(bomb);
-    dp.colorFill(TFT_BLACK);
   }
 
-  if (win_team && gameState.getWinTeam().compare(win_team) != 0) {
-    Log.verboseln("won: %s", win_team);
+  if (win_team && gameState.getWinTeam() != win_team) {
     gameState.updateRoundWinTeam(win_team);
-    clock_delay = 10;
-    dp.colorFill(TFT_BLACK);
   }
-
-  if (health != 0 && health != gameState.getHealth()) {
-    Log.verboseln("health in game state: %d, health from request: %d",
-                  gameState.getHealth(), health);
-    gameState.updatePlayerHealth(health);
-  }
-
-  elapsed = esp_timer_get_time() - now;
-  now = esp_timer_get_time();
-  Serial.println("elapsed parse game state:");
-  Serial.println(elapsed);
 
   dp.updateDisplay(gameState);
 
-  elapsed = esp_timer_get_time() - now;
-  now = esp_timer_get_time();
-  Serial.println("elapsed display:");
-  Serial.println(elapsed);
-
   res.status(200);
   res.print("ok");
-
-  elapsed = esp_timer_get_time() - now;
-  Serial.println("elapsed response:");
-  Serial.println(elapsed);
 }
 
 void handleGet(Request &req, Response &res) {
@@ -110,68 +61,75 @@ void handleGet(Request &req, Response &res) {
   res.print(FPSTR(idx2));
 }
 
+uint32_t millis_cb(void)
+{
+  return esp_timer_get_time() / 1000;
+}
 
-void timer_callback(void *arg) {
-  if (gameState.getPhase() == "freezetime") {
-    int color;
-    if (flip == 0) {
-      color = TFT_BLUE;
-      flip = 1;
-    } else {
-      color = TFT_RED;
-      flip = 0;
+void lvgl_timer_callback(void *arg) {
+  LVGLDisplay::handle();
+  lv_task_handler();
+  ui_tick();
+}
 
-      if (freezetime_counter < 15) {
-        freezetime_counter++;
-      }
-    }
-    dp.colorFill(color);
-    char text[32];
-    snprintf(text, sizeof(text), "BUY %d", 15 - freezetime_counter);
-    dp.drawLargeTextTop(text, color);
+void gamestate_tasks(void *arg) {
+  if (freezeFlipFlop) {
+    set_var_led_color(0xFF0000);
+    freezeFlipFlop = 0;
   } else {
-    flip = 0;
-    freezetime_counter = 0;
+    set_var_led_color(0x0000FF);
+    freezeFlipFlop = 1;
+  }
 
-    if (clock_delay > 0) {
-      clock_delay--;
-    } else {
-      yield();
-      dp.drawLargeTextTop(timeClient.getFormattedTime().c_str(), TFT_BLACK);
-    }
+  if (get_var_bomb_timer() > 0) {
+    set_var_bomb_timer(get_var_bomb_timer() - 1);
+  }
+
+  if (millis_cb() - gameState.getLastHeartBeat() > 60000) {
+    loadScreen(SCREEN_ID_STANDBY);
   }
 }
 
 void setup() {
   Serial.begin(115200);
-  Log.begin(LOG_LEVEL_VERBOSE, &Serial);
   while (!Serial);
 
   WiFiManager wm;
 
-  dp.displayConnectionInfo(false, "", "");
+  LVGLDisplay::begin();
 
-  bool res = wm.autoConnect("cs2-screen");
+  lv_init();
+  lv_tick_set_cb(millis_cb);
+  ui_init();
+
+  esp_timer_create_args_t lvgl_timer_args = {
+      .callback = lvgl_timer_callback,
+      .name = "lvgl"
+  };
+  esp_timer_create(&lvgl_timer_args, &lvgl_timer);
+  esp_timer_start_periodic(lvgl_timer, 5000); // 5ms
+
+  esp_timer_create_args_t freezetime_timer_args = {
+    .callback = gamestate_tasks,
+    .name = "freezetime led"
+};
+  esp_timer_create(&freezetime_timer_args, &gamestate_timer);
+  esp_timer_start_periodic(gamestate_timer, 500000); // 500ms
+
+  delay(4000);
+
+  loadScreen(SCREEN_ID_CONNECTING);
+
+  bool res = wm.autoConnect("cs2screen");
 
   if (!res) {
     ESP.restart();
   }
 
-  dp.displayConnectionInfo(true, WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
+  set_var_ip(WiFi.localIP().toString().c_str());
+  set_var_network(WiFi.SSID().c_str());
 
-  timeClient.begin();
-  timeClient.setTimeOffset(3600);
-  timeClient.update();
-
-  // Set up the timer
-  const esp_timer_create_args_t timer_args = {
-    .callback = &timer_callback,
-    .name = "one_second_timer"
-  };
-  esp_timer_handle_t timer_handle;
-  esp_timer_create(&timer_args, &timer_handle);
-  // Start timer: 1,000,000 microseconds = 1 second
-  esp_timer_start_periodic(timer_handle, 500000);
+  loadScreen(SCREEN_ID_CONNECTED);
 
   app.post("/", &handlePostGSI);
   app.get("/", &handleGet);

@@ -9,10 +9,8 @@
 #define TFT_MOSI 23
 #define TFT_BLK 32
 
-
-
 #include <LovyanGFX.hpp>
-#include "main.h"
+#include "AppConfig.h"
 
 class LGFX : public lgfx::LGFX_Device
 {
@@ -50,7 +48,7 @@ public:
 
       cfg.panel_width      = SCREEN_HEIGHT;   // Physical width
       cfg.panel_height     = SCREEN_WIDTH;   // Physical height
-      cfg.offset_x         = 36;     // X offset
+      cfg.offset_x         = 35;     // X offset
       cfg.offset_y         = 0;     // Y offset
       cfg.offset_rotation  = 0;
       cfg.dummy_read_pixel = 8;
@@ -58,7 +56,7 @@ public:
 
       cfg.readable         = false;
       cfg.invert           = true;  // Color inversion (may need to toggle)
-      cfg.rgb_order        = true;
+      cfg.rgb_order        = false;
       cfg.dlen_16bit       = false;
       cfg.bus_shared       = true;
  

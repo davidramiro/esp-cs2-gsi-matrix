@@ -1,0 +1,49 @@
+#ifndef LV_CONF_H
+#define LV_CONF_H
+
+#define LV_COLOR_DEPTH 16
+#define LV_USE_STDLIB_MALLOC LV_STDLIB_BUILTIN
+#define LV_MEM_SIZE (64U * 1024U)
+
+#define LV_USE_LOG 0
+
+#define LV_USE_ASSERT_NULL 1
+#define LV_USE_ASSERT_MALLOC 1
+#define LV_USE_ASSERT_STYLE 0
+#define LV_USE_ASSERT_MEM_INTEGRITY 0
+#define LV_USE_ASSERT_OBJ 0
+
+#define LV_USE_PERF_MONITOR 0
+#define LV_USE_MEM_MONITOR 0
+#define LV_USE_REFR_DEBUG 0
+
+#define LV_USE_USER_DATA 1
+
+#define LV_FONT_MONTSERRAT_14 1
+#define LV_FONT_MONTSERRAT_30 1
+#define LV_FONT_DEFAULT &lv_font_montserrat_14
+
+#define LV_USE_THEME_DEFAULT 1
+#define LV_THEME_DEFAULT_DARK 1
+#define LV_THEME_DEFAULT_GROW 1
+#define LV_THEME_DEFAULT_TRANSITION_TIME 80
+
+#define LV_USE_LABEL 1
+#define LV_USE_BAR 1
+#define LV_USE_BTN 1
+#define LV_USE_SLIDER 1
+#define LV_USE_ARC 1
+#define LV_USE_IMG 1
+#define LV_USE_LINE 1
+#define LV_USE_TABLE 1
+#define LV_USE_CANVAS 1
+
+#define LV_USE_FLEX 1
+#define LV_USE_GRID 1
+
+#define LV_BUILD_EXAMPLES 0
+#define LV_USE_DEMO_WIDGETS 0
+#define LV_USE_DEMO_BENCHMARK 0
+#define LV_USE_DEMO_STRESS 0
+
+#endif
