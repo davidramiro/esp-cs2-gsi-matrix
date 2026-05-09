@@ -339,9 +339,10 @@ void create_screen_round_start() {
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
-            lv_obj_set_pos(obj, 108, 77);
+            lv_obj_set_pos(obj, 48, 69);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-            lv_label_set_text_static(obj, "ROUND START");
+            lv_obj_set_style_text_font(obj, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_label_set_text_static(obj, "ROUND LIVE");
         }
     }
     
@@ -433,7 +434,7 @@ void create_screen_standby() {
         {
             lv_obj_t *obj = lv_led_create(parent_obj);
             objects.obj12 = obj;
-            lv_obj_set_pos(obj, 8, 153);
+            lv_obj_set_pos(obj, 16, 81);
             lv_obj_set_size(obj, 8, 8);
             lv_led_set_color(obj, lv_color_hex(0x369d18));
             lv_led_set_brightness(obj, 255);
@@ -441,17 +442,18 @@ void create_screen_standby() {
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.obj13 = obj;
-            lv_obj_set_pos(obj, 24, 149);
+            lv_obj_set_pos(obj, 39, 77);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_text_color(obj, lv_color_hex(0x545454), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text_static(obj, "Waiting for game...");
         }
         {
             lv_obj_t *obj = lv_image_create(parent_obj);
-            lv_obj_set_pos(obj, 211, 16);
+            lv_obj_set_pos(obj, 200, 17);
             lv_obj_set_size(obj, 98, 137);
             lv_image_set_src(obj, &img_zaza);
             lv_image_set_scale(obj, 140);
+            lv_obj_set_style_image_opa(obj, 150, LV_PART_MAIN | LV_STATE_DEFAULT);
         }
     }
     

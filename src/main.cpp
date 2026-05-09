@@ -13,12 +13,12 @@ esp_timer_handle_t gamestate_timer;
 
 uint8_t freezeFlipFlop = 0;
 uint8_t standbyTick = 0;
+bool started = false;
 
 void handlePostGSI(Request &req, Response &res) {
-  gameState.setHeartbeat();
-
-  JsonDocument obj;
+  StaticJsonDocument<512> obj; // Use fixed size to avoid heap fragmentation
   const DeserializationError error = deserializeJson(obj, *req.stream());
+
 
   if (error) {
     Serial.printf("error deserializing json body: %s", error.c_str());
@@ -27,19 +27,19 @@ void handlePostGSI(Request &req, Response &res) {
     return;
   }
 
+  gameState.setHeartbeat();
+
   char const *phase = obj["round"]["phase"];
   char const *bomb = obj["round"]["bomb"];
   char const *win_team = obj["round"]["win_team"];
   int money = obj["player"]["state"]["money"];
   int equip = obj["player"]["state"]["equip_value"];
 
-  char moneyStr[50];
-  char equipStr[50];
-  sprintf(equipStr, "%d", equip);
-  sprintf(moneyStr, "%d", money);
+  std::string moneyStr = std::to_string(money);
+  std::string equipStr = std::to_string(equip);
 
-  set_var_equip(equipStr);
-  set_var_money(moneyStr);
+  set_var_equip(equipStr.c_str());
+  set_var_money(moneyStr.c_str());
 
   if (phase && gameState.getPhase() != phase) {
     gameState.updateRoundPhase(phase);
@@ -78,19 +78,23 @@ void lvgl_timer_callback(void *arg) {
 }
 
 void gamestate_tasks(void *arg) {
-  if (freezeFlipFlop) {
-    loadScreen(SCREEN_ID_FREEZETIME_1);
-    freezeFlipFlop = 0;
-  } else {
-    loadScreen(SCREEN_ID_FREEZETIME);
-    freezeFlipFlop = 1;
+  if (gameState.getPhase() == "freezetime" && millis_cb() - gameState.getLastHeartBeat() < 60000) {
+    if (freezeFlipFlop) {
+      loadScreen(SCREEN_ID_FREEZETIME_1);
+      freezeFlipFlop = 0;
+    } else {
+      loadScreen(SCREEN_ID_FREEZETIME);
+      freezeFlipFlop = 1;
+    }
   }
 
-  if (get_var_bomb_timer() > 0) {
-    set_var_bomb_timer(get_var_bomb_timer() - 1);
+  if (gameState.getBombStatus() == "planted") {
+    if (get_var_bomb_timer() > 0) {
+      set_var_bomb_timer(get_var_bomb_timer() - 1);
+    }
   }
 
-  if (millis_cb() - gameState.getLastHeartBeat() > 60000) {
+  if (started && millis_cb() - gameState.getLastHeartBeat() > 60000) {
     loadScreen(SCREEN_ID_STANDBY);
   }
 }
@@ -105,6 +109,8 @@ void setup() {
 
   lv_init();
   lv_tick_set_cb(millis_cb);
+  lv_obj_clean(lv_scr_act());
+
   ui_init();
 
   esp_timer_create_args_t lvgl_timer_args = {
@@ -131,10 +137,13 @@ void setup() {
     ESP.restart();
   }
 
+  started = true;
   set_var_ip(WiFi.localIP().toString().c_str());
   set_var_network(WiFi.SSID().c_str());
 
   loadScreen(SCREEN_ID_CONNECTED);
+
+  gameState.setHeartbeat();
 
   app.post("/", &handlePostGSI);
   app.get("/", &handleGet);

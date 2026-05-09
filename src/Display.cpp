@@ -13,15 +13,12 @@ void Display::updateDisplay(GameState &gameState) {
       loadScreen(SCREEN_ID_ROUND_START);
     } else if (gameState.getPhase() == "freezetime") {
       loadScreen(SCREEN_ID_FREEZETIME);
-    }
-  }
-
-  if (gameState.roundWinTeamIsUpdated()) {
-    if (gameState.getWinTeam() == "CT") {
-      loadScreen(SCREEN_ID_CT_WIN);
-    }
-    if (gameState.getWinTeam() == "T") {
-      loadScreen(SCREEN_ID_T_WIN);
+    } else if (gameState.getPhase() == "over") {
+      if (gameState.getWinTeam() == "CT") {
+        loadScreen(SCREEN_ID_CT_WIN);
+      } else if (gameState.getWinTeam() == "T") {
+        loadScreen(SCREEN_ID_T_WIN);
+      }
     }
   }
 
